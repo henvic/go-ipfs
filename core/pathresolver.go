@@ -13,9 +13,13 @@ import (
 
 const maxLinks = 32
 
-var ErrTooManyLinks = errors.New("exceeded maximum number of links in ipns entry")
+// errors returned by Resolve function
+var (
+	ErrTooManyLinks = errors.New("core/resolve: exceeded maximum number of links in ipns entry")
+	ErrNoNamesys    = errors.New("core/resolve: no Namesys on IpfsNode - can't resolve ipns entry")
+)
 
-// Resolves the given path by parsing out /ipns/ entries and then going
+// Resolve resolves the given path by parsing out /ipns/ entries and then going
 // through the /ipfs/ entries and returning the final merkledage node.
 // Effectively enables /ipns/ in CLI commands.
 func Resolve(ctx context.Context, n *IpfsNode, p path.Path) (*merkledag.Node, error) {
@@ -39,6 +43,10 @@ func (r *resolver) resolveRecurse(depth int) (*merkledag.Node, error) {
 	// to be an ipfs or an ipns resolution?
 
 	if strings.HasPrefix(r.p.String(), "/ipns/") {
+		// TODO(cryptix): we sould be able to query the local cache for the path
+		if r.n.Namesys == nil {
+			return nil, ErrNoNamesys
+		}
 		// if it's an ipns path, try to resolve it.
 		// if we can't, we can give that error back to the user.
 		seg := r.p.Segments()
