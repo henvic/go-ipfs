@@ -1,4 +1,4 @@
-// package path implements utilities for resolving paths within ipfs.
+// Package path implements utilities for resolving paths within ipfs.
 package path
 
 import (
@@ -99,9 +99,6 @@ func (s *Resolver) ResolveLinks(ctx context.Context, ndd *merkledag.Node, names 
 	result = append(result, ndd)
 	nd := ndd // dup arg workaround
 
-	ctx, cancel := context.WithTimeout(ctx, time.Minute)
-	defer cancel()
-
 	// for each of the path components
 	for _, name := range names {
 
@@ -123,11 +120,8 @@ func (s *Resolver) ResolveLinks(ctx context.Context, ndd *merkledag.Node, names 
 
 		if nlink.Node == nil {
 			// fetch object for link and assign to nd
-			/*
-				TODO(cryptix): we wrapped a new context for each name iteration
-				is this correct?
-				moved it out of the loop for now
-			*/
+			ctx, cancel := context.WithTimeout(ctx, time.Minute)
+			defer cancel()
 			nd, err := s.DAG.Get(ctx, next)
 			if err != nil {
 				return append(result, nd), err
