@@ -29,17 +29,13 @@ test_expect_success "HTTP POST file gives Hash" '
   curl -svX POST --data-binary @infile "$URL" 2>curl.out &&
   grep "HTTP/1.1 201 Created" curl.out &&
   LOCATION=$(grep Location curl.out) &&
-  HASH=$(expr "$LOCATION" : "< Location: /ipfs/\(.*\)$")
+  HASH=$(echo $LOCATION | cut -d":" -f2- |tr -d " \n\r")
 '
 
-# this is failing on osx
-# claims "multihash too short. must be > 3 bytes" but the multihash is there.
-test_expect_failure "We can HTTP GET file just created" '
-  URL="http://localhost:$port/ipfs/$HASH" &&
+test_expect_success "We can HTTP GET file just created" '
+  URL="http://localhost:${port}${HASH}" &&
   curl -so outfile "$URL" &&
-  test_cmp infile outfile ||
-  echo $URL &&
-  test_fsh cat outfile
+  test_cmp infile outfile
 '
 
 test_expect_success "HTTP PUT empty directory" '
