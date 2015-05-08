@@ -1,6 +1,7 @@
 package corehttp
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"io"
@@ -309,6 +310,9 @@ func (i *gatewayHandler) putEmptyDirHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (i *gatewayHandler) putHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO(cryptix): will be resolved in PR#1191
+	webErrorWithCode(w, "Sorry, PUT is bugged right now, closing request", errors.New("handler disabled"), http.StatusInternalServerError)
+	return
 	urlPath := r.URL.Path
 	pathext := urlPath[5:]
 	var err error
